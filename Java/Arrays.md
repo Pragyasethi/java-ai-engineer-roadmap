@@ -2,8 +2,6 @@
 
 An array is a fixed-size collection of elements of the same data type stored in contiguous memory locations.
 
-Explain Like I’m 10
-
 Imagine a train with 5 coaches.
 
 Each coach has a number:
