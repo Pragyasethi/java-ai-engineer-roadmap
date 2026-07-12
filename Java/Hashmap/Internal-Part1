@@ -1,0 +1,434 @@
+# Why Does HashMap Use `(capacity - 1) & hash` Instead of `%`?
+
+## The Problem
+
+HashMap stores data in an array of buckets.
+
+Whenever a key is inserted, HashMap must decide **which bucket** to place it in.
+
+Example:
+
+```
+Capacity = 16
+
+Buckets
+
+0
+1
+2
+3
+...
+15
+```
+
+If a key has the following hash value:
+
+```
+hash = 53
+```
+
+How do we determine the bucket?
+
+---
+
+# The Traditional Approach
+
+One approach is to use the modulo (`%`) operator.
+
+```java
+bucketIndex = hash % capacity;
+```
+
+Example:
+
+```java
+53 % 16 = 5
+```
+
+The key is stored in bucket **5**.
+
+This approach works correctly for **any capacity**.
+
+Examples:
+
+```
+53 % 15
+53 % 17
+53 % 20
+53 % 37
+```
+
+---
+
+# Why Doesn't Java Use `%`?
+
+Modulo involves a **division operation**, which is comparatively expensive.
+
+HashMap is one of the most frequently used classes in Java.
+
+Even a small optimization in bucket calculation can improve overall application performance.
+
+Instead of using:
+
+```java
+hash % capacity
+```
+
+Java uses:
+
+```java
+(capacity - 1) & hash
+```
+
+Bitwise AND (`&`) is significantly faster than modulo (`%`).
+
+---
+
+# Why Must Capacity Be a Power of Two?
+
+HashMap capacities are always:
+
+```
+16
+32
+64
+128
+256
+...
+```
+
+Notice that each value is a power of two.
+
+```
+16 = 2⁴
+32 = 2⁵
+64 = 2⁶
+```
+
+This is not accidental.
+
+It is required for the bitwise optimization.
+
+---
+
+# Why `(capacity - 1)`?
+
+Suppose:
+
+```
+Capacity = 16
+```
+
+Subtract one:
+
+```
+16 - 1 = 15
+```
+
+Binary representation:
+
+```
+16 = 10000
+
+15 = 01111
+```
+
+Notice something important.
+
+After subtracting one from a power of two, **all lower bits become 1**.
+
+More examples:
+
+```
+8  = 1000
+
+7  = 0111
+
+16 = 10000
+
+15 = 01111
+
+32 = 100000
+
+31 = 011111
+```
+
+This creates the perfect binary mask.
+
+---
+
+# What is a Binary Mask?
+
+A binary mask is simply a binary number used to keep or discard bits.
+
+Rule:
+
+```
+Mask bit = 1
+
+→ Keep the original bit
+
+Mask bit = 0
+
+→ Force the result to 0
+```
+
+Example:
+
+```
+Hash
+
+110101
+
+Mask
+
+01111
+
+Result
+
+00101
+```
+
+The lower bits are preserved.
+
+Those preserved bits become the bucket index.
+
+---
+
+# Why Doesn't Java Use Capacity Directly?
+
+Suppose Java used:
+
+```java
+hash & 16
+```
+
+Binary:
+
+```
+16 = 10000
+```
+
+Only one bit would be considered.
+
+Most information from the hash would be discarded.
+
+Bucket distribution would become very poor.
+
+Instead Java uses:
+
+```
+15 = 01111
+```
+
+which preserves all lower bits.
+
+---
+
+# Why Not Use a Prime Number?
+
+Suppose the capacity is:
+
+```
+17
+```
+
+Bucket calculation would be:
+
+```java
+hash % 17
+```
+
+This works perfectly.
+
+Many older hash table implementations actually used prime-sized tables.
+
+However, Java chose powers of two because they provide several advantages.
+
+## Advantages of Power-of-Two Capacity
+
+### 1. Faster bucket calculation
+
+Instead of:
+
+```java
+hash % capacity
+```
+
+Java performs:
+
+```java
+(capacity - 1) & hash
+```
+
+Bitwise AND is much faster than modulo.
+
+---
+
+### 2. Simple Binary Mask
+
+Power-of-two capacities produce masks like:
+
+```
+15 = 01111
+
+31 = 011111
+
+63 = 0111111
+```
+
+These masks preserve all lower bits of the hash.
+
+---
+
+### 3. Faster Resizing
+
+When capacity doubles:
+
+```
+16
+
+↓
+
+32
+```
+
+Entries either remain in the same bucket or move to:
+
+```
+oldIndex + oldCapacity
+```
+
+Java 8 uses this property to make resizing much more efficient.
+
+(We will study this in detail during the Rehashing section.)
+
+---
+
+# Why Are Zeros in the Mask Bad?
+
+Suppose the mask is:
+
+```
+10011
+```
+
+Now compare two different hash values.
+
+```
+Hash A
+
+110101
+
+Hash B
+
+111101
+```
+
+Apply the same mask:
+
+```
+Mask
+
+010011
+```
+
+Both hashes may produce the same result because every **0** in the mask forces that bit to become **0**, discarding part of the original hash.
+
+Different hashes can therefore end up with the same bucket index.
+
+This increases collisions.
+
+---
+
+# Engineering Insight
+
+Java designers intentionally selected powers of two because:
+
+- Bitwise operations are faster than modulo.
+- `(capacity - 1)` creates an ideal binary mask.
+- Bucket calculation becomes extremely efficient.
+- Resizing becomes simpler and faster.
+- Overall HashMap performance improves.
+
+This is a design optimization, not a mathematical requirement.
+
+---
+
+# Interview Questions
+
+### Why does HashMap use powers of two?
+
+Because it allows bucket calculation using:
+
+```java
+(capacity - 1) & hash
+```
+
+instead of the slower modulo operation.
+
+---
+
+### Why is `(capacity - 1)` used?
+
+Subtracting one from a power of two produces a binary mask containing all lower bits set to **1**, which preserves the lower bits of the hash during bucket calculation.
+
+---
+
+### Why not use `hash & capacity`?
+
+Because the binary representation of the capacity contains only one set bit.
+
+Using it would discard most of the hash information and produce poor bucket distribution.
+
+---
+
+### Why not use prime numbers?
+
+Prime numbers work correctly with modulo-based hashing, but Java prefers powers of two because they enable faster bucket calculation and more efficient resizing.
+
+---
+
+# Memory Trick
+
+Remember this chain:
+
+```
+Power of 2
+
+↓
+
+Subtract 1
+
+↓
+
+All lower bits become 1
+
+↓
+
+Perfect binary mask
+
+↓
+
+Fast '&' operation
+
+↓
+
+Fast bucket calculation
+
+↓
+
+Better HashMap performance
+```
+
+---
+
+# 60-Second Revision
+
+- HashMap must calculate a bucket index for every key.
+- Traditional hash tables often use `hash % capacity`.
+- Java uses `(capacity - 1) & hash` because bitwise AND is faster than modulo.
+- This optimization only works correctly when the capacity is a power of two.
+- Subtracting one from a power of two creates a binary mask with all lower bits set to **1**.
+- The mask preserves the lower bits of the hash, producing a good bucket index.
+- Power-of-two capacities also make resizing more efficient.
