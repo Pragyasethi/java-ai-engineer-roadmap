@@ -1,0 +1,274 @@
+# Interview Questions and Answers
+
+---
+
+## Q1. Why does HashMap always keep its capacity as a power of 2?
+
+### Answer
+
+HashMap keeps its capacity as a power of 2 (16, 32, 64, 128...) because it calculates the bucket index using:
+
+```java
+bucket = hash & (capacity - 1);
+```
+
+When the capacity is a power of 2, `(capacity - 1)` becomes a bitmask containing all 1s.
+
+Examples:
+
+| Capacity | Capacity - 1 | Binary Mask |
+|----------|--------------|-------------|
+|16|15|1111|
+|32|31|11111|
+|64|63|111111|
+|128|127|1111111|
+
+This allows the bitwise AND operation to preserve all the lower bits of the hash while efficiently calculating the bucket index.
+
+If the capacity were not a power of 2 (for example, 10), then:
+
+```
+10 - 1 = 9
+```
+
+Binary:
+
+```
+1001
+```
+
+The mask contains 0s between 1s, causing some hash bits to be discarded. This leads to more collisions because different hash values may map to the same bucket.
+
+### Interview Takeaway
+
+Power-of-two capacity ensures:
+
+- Efficient bucket calculation.
+- Better bucket distribution.
+- Fewer collisions.
+- Faster lookup performance.
+
+---
+
+## Q2. Why does HashMap use `&` instead of `%`?
+
+### Answer
+
+Instead of calculating:
+
+```java
+bucket = hash % capacity;
+```
+
+HashMap uses:
+
+```java
+bucket = hash & (capacity - 1);
+```
+
+There are two reasons.
+
+### 1. Performance
+
+The modulo operator (`%`) performs integer division, which is computationally more expensive than a bitwise AND operation.
+
+The AND operator works directly on binary bits and is executed very efficiently by the CPU.
+
+### 2. Correctness with Power-of-Two Capacity
+
+When the capacity is a power of 2, `(capacity - 1)` becomes a bitmask of all 1s.
+
+Example:
+
+Capacity = 16
+
+```
+Capacity - 1 = 15
+
+1111
+```
+
+Performing:
+
+```java
+hash & 1111
+```
+
+extracts exactly the lower bits needed for the bucket index.
+
+Thus, HashMap gets the same bucket index as modulo (for non-negative hashes) while using a much faster operation.
+
+### Interview Takeaway
+
+HashMap does not use `&` only because it is faster.
+
+It uses `&` because power-of-two capacities make bit masking both **correct** and **efficient**.
+
+---
+
+## Q3. Why does HashMap use `h ^ (h >>> 16)`?
+
+### Answer
+
+HashMap performs hash spreading before calculating the bucket index.
+
+```java
+hash = h ^ (h >>> 16);
+```
+
+The goal is to mix the higher 16 bits of the hash code into the lower 16 bits.
+
+This is necessary because the bucket index uses only the lower bits.
+
+Without hash spreading:
+
+```
+Hash A
+
+xxxxxxxx0001
+
+Hash B
+
+yyyyyyyy0001
+```
+
+Although the higher bits are different, both hashes have the same lower bits and would map to the same bucket.
+
+After applying:
+
+```java
+h ^ (h >>> 16)
+```
+
+information from the higher bits is mixed into the lower bits.
+
+As a result, keys are distributed more uniformly across buckets, reducing collisions.
+
+### Interview Takeaway
+
+Hash spreading improves bucket distribution by ensuring that both higher and lower bits influence the final bucket index.
+
+---
+
+## Q4. Why does HashMap use the unsigned right shift operator (`>>>`) instead of the signed right shift operator (`>>`)?
+
+### Answer
+
+Java provides two right shift operators.
+
+```java
+>>
+```
+
+Signed Right Shift
+
+```java
+>>>
+```
+
+Unsigned Right Shift
+
+The signed right shift (`>>`) copies the sign bit into the new positions.
+
+For negative hash codes, this fills the leftmost bits with 1s.
+
+Example:
+
+```
+11110000111100001111000011110000
+```
+
+After signed right shift:
+
+```
+11111111111111111111000011110000
+```
+
+This introduces extra 1s from the sign bit and reduces the effectiveness of hash spreading.
+
+The unsigned right shift (`>>>`) always fills the new leftmost bits with 0s.
+
+Example:
+
+```
+11110000111100001111000011110000
+```
+
+After unsigned right shift:
+
+```
+00000000000000001111000011110000
+```
+
+This preserves the original bit pattern without introducing sign extension.
+
+As a result, XOR produces a better-distributed hash.
+
+### Interview Takeaway
+
+HashMap uses `>>>` because hash spreading should depend only on the original hash bits, not on whether the hash code is positive or negative.
+
+---
+
+## Q5. How do all these optimizations work together?
+
+### Answer
+
+HashMap follows these steps:
+
+1. Obtain the object's hash code.
+
+```java
+h = key.hashCode();
+```
+
+2. Improve the hash distribution.
+
+```java
+hash = h ^ (h >>> 16);
+```
+
+3. Calculate the bucket index.
+
+```java
+bucket = hash & (capacity - 1);
+```
+
+This design provides:
+
+- Better hash distribution.
+- Efficient bucket calculation.
+- Reduced collisions.
+- Faster lookup, insertion, and deletion.
+
+### Interview Summary
+
+Remember this flow:
+
+```
+Object
+
+↓
+
+hashCode()
+
+↓
+
+Hash Spreading
+
+h ^ (h >>> 16)
+
+↓
+
+Bucket Calculation
+
+hash & (capacity - 1)
+
+↓
+
+Bucket Index
+
+↓
+
+Store / Search Node
+```
