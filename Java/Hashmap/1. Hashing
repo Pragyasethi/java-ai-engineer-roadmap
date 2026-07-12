@@ -1,0 +1,37 @@
+#Hashing
+
+Hashing is the process of converting a key 
+into a numeric value (hash code) so data can be stored and found quickly.
+
+
+Imagine every student gets a locker number.
+
+Instead of checking every locker, you directly go to the assigned locker.
+
+Hashing works the same way.
+
+Why do we need it?
+
+To avoid searching every stored element.
+
+Important Points
+
+* Produces a hash code
+* Helps in fast lookup
+* Used by HashMap
+
+Real-world Examples
+
+* Dictionary
+* Library catalog
+* User session lookup
+
+Memory Trick
+
+Hashing = Finding the correct locker
+
+60-Second Revision
+
+* Key → Hash Code
+* Faster searching
+* Used in HashMap
