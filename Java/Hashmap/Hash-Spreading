@@ -1,0 +1,295 @@
+# Hash Spreading in Java 
+---
+
+# Definition
+
+Hash spreading is the process of mixing the higher bits of a hash code into the lower bits before determining the bucket index in a `HashMap`.
+
+Java uses hash spreading to reduce collisions when the table size is small.
+
+---
+
+# Why is Hash Spreading Needed?
+
+Every object in Java has a hash code.
+
+Example:
+
+```
+Customer A → 12345678
+
+Customer B → 98765432
+```
+
+HashMap **does not** directly use the entire hash code as the bucket index.
+
+Instead, it calculates:
+
+```
+bucketIndex = (tableLength - 1) & hash
+```
+
+Since table lengths are powers of 2 (16, 32, 64...), only the **lower bits** of the hash are used to determine the bucket.
+
+If many objects have different **high bits** but identical **low bits**, they would all end up in the same bucket, causing collisions.
+
+Hash spreading solves this problem by mixing the high bits into the low bits before computing the bucket index.
+
+---
+
+# Internal Working
+
+In Java 8+, the `HashMap` implementation applies the following transformation:
+
+```java
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+```
+
+Breaking it down:
+
+1. Get the object's original hash code.
+2. Shift it 16 bits to the right using the unsigned right shift operator (`>>>`).
+3. XOR (`^`) the shifted value with the original hash code.
+4. Use the resulting hash to compute the bucket index.
+
+This spreads entropy from the higher bits into the lower bits, leading to a more even distribution of keys.
+
+---
+
+# Why `>>> 16`?
+
+Java `int` is 32 bits.
+
+```
+| Upper 16 bits | Lower 16 bits |
+```
+
+The lower bits are primarily used when calculating the bucket index.
+
+By shifting the upper 16 bits down and XORing them with the original hash, information from the upper half influences the lower half.
+
+---
+
+# Why XOR (`^`)?
+
+XOR is chosen because it combines two bit patterns while preserving differences.
+
+Truth table:
+
+```
+0 ^ 0 = 0
+0 ^ 1 = 1
+1 ^ 0 = 1
+1 ^ 1 = 0
+```
+
+Using XOR ensures that if the higher bits differ, the lower bits are likely to change as well, reducing clustering.
+
+---
+
+# Bucket Index Calculation
+
+Suppose:
+
+```
+Table Size = 16
+```
+
+Then:
+
+```
+tableLength - 1 = 15
+```
+
+Binary:
+
+```
+1111
+```
+
+Bucket index calculation:
+
+```java
+bucket = hash & 15;
+```
+
+Only the last 4 bits of the hash determine the bucket.
+
+This is why improving the quality of the lower bits is so important.
+
+---
+
+# Example
+
+Original hash:
+
+```
+10101010101010101111000011110000
+```
+
+Shift right by 16:
+
+```
+00000000000000001010101010101010
+```
+
+XOR:
+
+```
+10101010101010100101101001011010
+```
+
+Now the lower bits contain information from both halves of the original hash.
+
+---
+
+# Why Not Use `%`?
+
+A common question is why `HashMap` uses:
+
+```java
+hash & (length - 1)
+```
+
+instead of:
+
+```java
+hash % length
+```
+
+Reasons:
+
+- Bitwise AND is faster than modulo.
+- The table length is always a power of 2.
+- `(length - 1)` becomes a bitmask.
+- The JVM can compute the bucket index efficiently using a single bitwise operation.
+
+---
+
+# Collision Example
+
+Without hash spreading:
+
+```
+Hash 1 → xxxx0001
+
+Hash 2 → yyyy0001
+
+Hash 3 → zzzz0001
+```
+
+Even though the upper bits differ, all three hashes have the same lower bits and would map to the same bucket.
+
+After hash spreading:
+
+```
+Hash 1 → xxxx1010
+
+Hash 2 → yyyy0110
+
+Hash 3 → zzzz1101
+```
+
+The lower bits become different, reducing collisions.
+
+---
+
+# Advantages
+
+- Better bucket distribution.
+- Fewer collisions.
+- Faster lookups.
+- Improved performance.
+- Minimal computational overhead.
+
+---
+
+# Real-world Usage
+
+Hash spreading benefits many Java collections and applications:
+
+- `HashMap`
+- `HashSet`
+- Caching systems
+- Session management
+- In-memory data stores
+- Large-scale backend services
+
+---
+
+# AI Engineering Connection
+
+Efficient hashing is important in AI systems for:
+
+- Feature hashing
+- Embedding lookups
+- Model caching
+- Vector database indexing
+- Distributed AI systems
+
+While the algorithms differ, the principle of distributing data evenly remains the same.
+
+---
+
+# Common Mistakes
+
+### Mistake 1
+
+Thinking the bucket index is the hash code itself.
+
+---
+
+### Mistake 2
+
+Assuming all 32 bits of the hash determine the bucket.
+
+---
+
+### Mistake 3
+
+Believing hash spreading eliminates collisions.
+
+It **reduces** collisions but cannot eliminate them entirely.
+
+---
+
+### Mistake 4
+
+Confusing the unsigned right shift operator (`>>>`) with the signed right shift operator (`>>`).
+
+---
+
+# Interview Questions
+
+1. What is hash spreading?
+2. Why does `HashMap` use `h ^ (h >>> 16)`?
+3. Why is `>>>` used instead of `>>`?
+4. Why is the table size always a power of 2?
+5. Why does `HashMap` use `&` instead of `%`?
+6. Does hash spreading eliminate collisions?
+7. How does hash spreading improve performance?
+
+---
+
+# 60-Second Revision
+
+- `HashMap` mixes higher bits into lower bits using `h ^ (h >>> 16)`.
+- Bucket index uses `hash & (tableLength - 1)`.
+- Only lower bits determine the bucket.
+- Hash spreading reduces collisions by improving the quality of the lower bits.
+- It is a lightweight optimization that significantly improves key distribution.
+
+---
+
+# What's Next
+
+The next topic in the HashMap series will cover:
+
+- Bucket indexing in detail
+- Why table sizes are powers of 2
+- Collision handling
+- Linked List to Red-Black Tree conversion (Java 8+)
+- Resize and rehashing
