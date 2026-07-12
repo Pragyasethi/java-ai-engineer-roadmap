@@ -1,0 +1,516 @@
+# Java Binary Basics
+
+> **Mentorship Series:** Java Backend → AI Engineer (90 Days)
+>
+> **Topic:** Binary Number System Fundamentals
+>
+> **Prerequisites:** None
+
+---
+
+# Definition
+
+Binary is a number system that uses only **two digits:**
+
+```
+0
+1
+```
+
+Unlike the decimal system (Base-10), binary is a **Base-2** number system.
+
+Every number inside a computer is ultimately stored as combinations of **0s and 1s**.
+
+---
+
+# Layman Explanation
+
+Imagine a row of switches.
+
+Each switch can only be:
+
+```
+OFF = 0
+ON  = 1
+```
+
+For example,
+
+```
+0 1 1 0
+```
+
+means
+
+```
+OFF
+ON
+ON
+OFF
+```
+
+Computers are built using billions of tiny electronic switches called **transistors**.
+
+A transistor naturally has two stable states:
+
+```
+OFF
+ON
+```
+
+Instead of storing numbers directly, computers simply remember which switches are ON and which are OFF.
+
+---
+
+# Why Do Computers Use Binary?
+
+Electricity has only two reliable states:
+
+```
+Low Voltage
+High Voltage
+```
+
+or
+
+```
+OFF
+ON
+```
+
+Representing these states as
+
+```
+0
+1
+```
+
+makes hardware reliable, fast, and less prone to errors.
+
+---
+
+# What is a Bit?
+
+A **Bit (Binary Digit)** is the smallest unit of data.
+
+Possible values:
+
+```
+0
+1
+```
+
+Examples
+
+```
+1 bit
+
+0
+
+or
+
+1
+```
+
+---
+
+# What is a Byte?
+
+```
+8 Bits = 1 Byte
+```
+
+Example
+
+```
+00101100
+```
+
+contains
+
+```
+8 bits
+```
+
+One byte can represent
+
+```
+0 – 255
+```
+
+(Unsigned representation)
+
+---
+
+# Bit Positions
+
+Every bit has a position.
+
+```
+Bit Position
+
+7 6 5 4 3 2 1 0
+```
+
+Each position represents a power of 2.
+
+|Position|Value|
+|---------|------|
+|0|1|
+|1|2|
+|2|4|
+|3|8|
+|4|16|
+|5|32|
+|6|64|
+|7|128|
+
+---
+
+# Decimal → Binary Conversion
+
+Keep dividing by 2.
+
+Example:
+
+```
+13
+```
+
+```
+13 /2 = 6 remainder 1
+
+6 /2 =3 remainder 0
+
+3 /2 =1 remainder 1
+
+1 /2 =0 remainder 1
+```
+
+Read from bottom to top.
+
+```
+1101
+```
+
+Therefore
+
+```
+13 = 1101₂
+```
+
+---
+
+# Binary → Decimal Conversion
+
+Example
+
+```
+00101100
+```
+
+Write values.
+
+```
+Bit
+
+0 0 1 0 1 1 0 0
+```
+
+```
+Value
+
+128 64 32 16 8 4 2 1
+```
+
+Take only positions containing 1.
+
+```
+32
+
+8
+
+4
+```
+
+Add them.
+
+```
+32 + 8 + 4 = 44
+```
+
+Therefore
+
+```
+00101100 = 44
+```
+
+---
+
+# Reading Binary Quickly
+
+Instead of calculating every time, immediately recognize powers.
+
+Example
+
+```
+10000000
+```
+
+Only
+
+```
+128
+```
+
+Example
+
+```
+00010000
+```
+
+Only
+
+```
+16
+```
+
+Example
+
+```
+10100000
+```
+
+```
+128 + 32 = 160
+```
+
+With practice this becomes instant.
+
+---
+
+# Bitwise OR Operator ( | )
+
+Rule
+
+```
+0 | 0 = 0
+
+0 | 1 = 1
+
+1 | 0 = 1
+
+1 | 1 = 1
+```
+
+OR returns **1 if at least one bit is 1.**
+
+---
+
+## Example
+
+```
+0101
+
+0011
+```
+
+Compare each column.
+
+```
+0 | 0 =0
+
+1 | 0 =1
+
+0 | 1 =1
+
+1 | 1 =1
+```
+
+Result
+
+```
+0111
+```
+
+Decimal
+
+```
+5 | 3 = 7
+```
+
+---
+
+# Why Java Uses Bit Operations
+
+Many Java internals rely on binary operations because they are extremely fast.
+
+Examples include:
+
+- HashMap
+- ThreadLocal
+- EnumSet
+- BitSet
+- ConcurrentHashMap
+- JVM internals
+- Networking
+- Compression
+
+---
+
+# AI Engineering Connection
+
+Binary knowledge is also useful in AI.
+
+Examples:
+
+- Quantized models (INT8)
+- FP16 calculations
+- GPU memory optimization
+- Tensor operations
+- Image storage
+- Audio encoding
+- Bit packing
+
+Even though AI libraries hide most low-level details, understanding binary helps explain why optimized models consume less memory and run faster.
+
+---
+
+# Real-world Usage
+
+Binary is used in:
+
+- Java programming
+- Operating systems
+- CPU instructions
+- Databases
+- Network protocols
+- Image formats
+- Video codecs
+- Cryptography
+- AI inference optimization
+
+---
+
+# Common Mistakes
+
+### Mistake 1
+
+Reading binary from left to right without considering bit positions.
+
+---
+
+### Mistake 2
+
+Forgetting powers of 2.
+
+---
+
+### Mistake 3
+
+Mixing decimal digits with binary digits.
+
+Binary only contains:
+
+```
+0
+
+1
+```
+
+---
+
+### Mistake 4
+
+Reading remainders from top to bottom during decimal-to-binary conversion.
+
+Always read from **bottom to top.**
+
+---
+
+# Memory Trick
+
+Remember this sequence:
+
+```
+128
+
+64
+
+32
+
+16
+
+8
+
+4
+
+2
+
+1
+```
+
+Once memorized, binary calculations become much faster.
+
+---
+
+# Interview Questions
+
+### Easy
+
+What is binary?
+
+---
+
+Why do computers use binary?
+
+---
+
+What is a bit?
+
+---
+
+What is a byte?
+
+---
+
+Convert
+
+```
+44
+```
+
+to binary.
+
+---
+
+Convert
+
+```
+00101100
+```
+
+to decimal.
+
+---
+
+Explain the OR operator.
+
+---
+
+Where are bitwise operators used in Java?
+
+---
+
+# 60-Second Revision
+
+- Binary uses only 0 and 1.
+- Computers store information using transistors.
+- 1 Byte = 8 Bits.
+- Every bit position represents a power of 2.
+- Convert decimal to binary using repeated division by 2.
+- Convert binary to decimal by adding the values of set bits.
+- OR returns 1 if at least one bit is 1.
+- Binary forms the foundation of Java internals, operating systems, networking, and AI optimization.
+
+---
