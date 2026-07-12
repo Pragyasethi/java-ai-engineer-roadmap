@@ -1,0 +1,626 @@
+# HashMap Internals - Part 2
+## Resizing, Capacity, Threshold & Load Factor
+
+---
+
+# Why do we need resizing?
+
+Imagine a classroom with only **16 lockers (buckets).**
+
+Initially:
+
+```
+Buckets
+
+0
+1
+2
+...
+15
+```
+
+Now only 10 students come.
+
+Everything works perfectly.
+
+But what if 500 students come?
+
+Many students will be assigned to the same bucket.
+
+Result:
+
+- More collisions
+- Longer Linked Lists / Red-Black Trees
+- Slower search
+- Slower insert
+- Slower delete
+
+Instead of forcing everyone into the same buckets, Java creates a **larger bucket array**.
+
+This process is called **Resizing (Rehashing).**
+
+---
+
+# Capacity
+
+Capacity means:
+
+> Total number of buckets currently available.
+
+Example
+
+```
+Capacity = 16
+
+Buckets
+
+0
+1
+2
+...
+15
+```
+
+Capacity is **NOT** the number of stored elements.
+
+Example
+
+```
+Capacity = 16
+
+Elements = 5
+
+Capacity is still 16.
+```
+
+---
+
+# Size
+
+Size means:
+
+> Number of key-value pairs currently stored.
+
+Example
+
+```
+Capacity = 16
+
+Inserted
+
+A
+B
+C
+D
+
+Size = 4
+```
+
+---
+
+# Load Factor
+
+Load Factor tells HashMap:
+
+> "How full should I become before increasing my bucket count?"
+
+Default value:
+
+```
+0.75
+```
+
+Meaning:
+
+HashMap allows itself to become about **75% full** before resizing.
+
+---
+
+# Why not resize only when HashMap becomes 100% full?
+
+Suppose
+
+```
+Capacity = 16
+```
+
+If Java waits until all 16 buckets are heavily occupied,
+
+then collisions increase significantly.
+
+Searching becomes slower because multiple entries may end up in the same bucket.
+
+Instead, Java resizes earlier to keep operations close to **O(1)**.
+
+---
+
+# Why is the default Load Factor 0.75?
+
+Java designers had to balance two opposite goals:
+
+- Memory usage
+- Performance
+
+---
+
+## Case 1: Very Low Load Factor (0.25)
+
+```
+Capacity = 16
+
+Threshold = 4
+```
+
+HashMap resizes after only 4 elements.
+
+Advantages
+
+- Very few collisions
+- Faster lookups
+
+Disadvantages
+
+- Wastes memory
+- Frequent resizing
+- More object allocation
+- More copying of entries
+
+---
+
+## Case 2: Very High Load Factor (1.0)
+
+```
+Capacity = 16
+
+Threshold = 16
+```
+
+HashMap waits until it is almost full.
+
+Advantages
+
+- Better memory utilization
+- Fewer resize operations
+
+Disadvantages
+
+- More collisions
+- Longer Linked Lists / Trees
+- Slower search
+- Slower insert
+- Slower delete
+
+---
+
+## Why exactly 0.75?
+
+A load factor of **0.75** provides a good balance.
+
+- Buckets are not too empty.
+- Buckets are not too crowded.
+- Memory usage remains reasonable.
+- Collisions remain low.
+- Resizing happens less frequently.
+- Lookup performance stays close to O(1).
+
+This is **not a mathematical rule**.
+
+It is an engineering decision based on years of practical benchmarking.
+
+For most applications,
+
+**0.75 gives the best trade-off between memory and speed.**
+
+---
+
+# Threshold
+
+Threshold determines **when resizing happens.**
+
+Formula
+
+```
+Threshold = Capacity × Load Factor
+```
+
+Example
+
+```
+Capacity = 16
+
+Load Factor = 0.75
+
+Threshold
+
+16 × 0.75
+
+= 12
+```
+
+Meaning:
+
+After inserting the **13th element**, HashMap resizes.
+
+---
+
+# Example
+
+Initial state
+
+```
+Capacity = 16
+
+Threshold = 12
+
+Size = 0
+```
+
+Insert elements
+
+```
+Size = 1
+
+Size = 5
+
+Size = 10
+
+Size = 12
+```
+
+Still no resize.
+
+Insert one more.
+
+```
+Size = 13
+```
+
+Now
+
+```
+13 > Threshold (12)
+```
+
+So resizing begins.
+
+---
+
+# Can we change the Load Factor?
+
+Yes.
+
+```java
+Map<String, Integer> map = new HashMap<>(16, 0.5f);
+```
+
+Here
+
+```
+Capacity = 16
+
+Load Factor = 0.5
+
+Threshold = 8
+```
+
+The map resizes after inserting the **9th element**.
+
+---
+
+# What happens during resizing?
+
+Old bucket array
+
+```
+Capacity = 16
+
+Buckets
+
+0
+1
+2
+...
+15
+```
+
+Java creates a new bucket array.
+
+```
+Capacity = 32
+
+Buckets
+
+0
+1
+2
+...
+31
+```
+
+Then every existing entry is redistributed into the new array.
+
+---
+
+# Why are entries moved again?
+
+Bucket index depends on capacity.
+
+Formula
+
+```
+index = hash & (capacity - 1)
+```
+
+Old capacity
+
+```
+16
+
+index = hash & 15
+```
+
+After resizing
+
+```
+Capacity = 32
+
+index = hash & 31
+```
+
+Since capacity changes,
+
+the bucket index may also change.
+
+Therefore every existing entry must be redistributed.
+
+---
+
+# Capacity Growth
+
+HashMap always doubles its capacity.
+
+```
+16
+
+↓
+
+32
+
+↓
+
+64
+
+↓
+
+128
+
+↓
+
+256
+```
+
+It never grows like
+
+```
+16
+
+17
+
+18
+
+19
+```
+
+Doubling keeps bucket calculation extremely fast.
+
+---
+
+# Why are capacities always powers of 2?
+
+HashMap calculates bucket index using
+
+```
+index = hash & (capacity - 1)
+```
+
+This bitwise optimization works correctly only when capacity is a power of 2.
+
+Examples
+
+```
+16
+
+32
+
+64
+
+128
+
+256
+```
+
+If capacity were
+
+```
+20
+```
+
+bucket distribution would become uneven, increasing collisions.
+
+Therefore Java always maintains capacities as powers of two.
+
+---
+
+# Does resizing happen after every insertion?
+
+No.
+
+Resizing occurs only when
+
+```
+Size > Threshold
+```
+
+Most insertions simply place the new entry into its bucket.
+
+---
+
+# Is resizing expensive?
+
+Yes.
+
+During resizing Java must
+
+- Allocate a new bucket array.
+- Visit every existing entry.
+- Determine its new bucket.
+- Insert it into the new array.
+
+Therefore resizing is an **O(n)** operation.
+
+Fortunately,
+
+it happens only occasionally.
+
+Most insertions remain close to **O(1)**.
+
+---
+
+# Interview Questions
+
+### What is Capacity?
+
+Total number of buckets.
+
+---
+
+### What is Size?
+
+Number of stored key-value pairs.
+
+---
+
+### What is Load Factor?
+
+The percentage of capacity HashMap is allowed to use before resizing.
+
+Default = **0.75**
+
+---
+
+### What is Threshold?
+
+```
+Threshold = Capacity × Load Factor
+```
+
+When **Size > Threshold**, resizing occurs.
+
+---
+
+### Why is the default Load Factor 0.75 instead of 1.0?
+
+Because:
+
+- A load factor of **1.0** increases collisions.
+- A very small load factor wastes memory and causes frequent resizing.
+- **0.75** provides the best balance between memory usage and performance for most applications.
+
+---
+
+### Why does HashMap resize?
+
+To reduce collisions and maintain nearly O(1) performance.
+
+---
+
+### Why does capacity double?
+
+To keep capacities as powers of two, enabling efficient bucket calculation using bitwise AND (`hash & (capacity - 1)`).
+
+---
+
+### Why must entries be redistributed after resizing?
+
+Because bucket indices depend on the capacity. Once capacity changes, many entries belong in different buckets.
+
+---
+
+# Common Mistakes
+
+❌ Capacity = Number of elements
+
+No.
+
+Capacity = Number of buckets.
+
+---
+
+❌ Size = Capacity
+
+No.
+
+Size is the number of stored entries.
+
+---
+
+❌ Load Factor means percentage of occupied buckets
+
+No.
+
+It is the threshold ratio that determines when resizing occurs.
+
+---
+
+❌ Resize happens when capacity becomes completely full
+
+No.
+
+Resize happens when
+
+```
+Size > Threshold
+```
+
+---
+
+❌ Resizing only creates a bigger bucket array
+
+No.
+
+Java also redistributes every existing entry into the new bucket array.
+
+---
+
+# Memory Trick
+
+```
+Capacity
+      ↓
+Load Factor
+      ↓
+Threshold = Capacity × Load Factor
+      ↓
+Size exceeds Threshold
+      ↓
+Resize
+      ↓
+Capacity doubles
+      ↓
+Entries redistributed
+```
+
+---
+
+# 60-Second Revision
+
+- Capacity = Total buckets.
+- Size = Stored key-value pairs.
+- Default Load Factor = **0.75**.
+- Threshold = Capacity × Load Factor.
+- Resize occurs when **Size > Threshold**.
+- Capacity doubles (16 → 32 → 64 → 128...).
+- Capacities are always powers of two.
+- Bucket index depends on capacity, so entries are redistributed after resizing.
+- Resizing is **O(n)** but happens infrequently.
+- Most HashMap operations remain close to **O(1)**.
