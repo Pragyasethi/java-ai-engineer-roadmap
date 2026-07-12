@@ -1,0 +1,366 @@
+# Bitwise Operators
+
+## Definition
+
+Bitwise operators perform operations directly on the binary representation (bits) of numbers.
+
+Instead of working on decimal values, they compare or manipulate individual bits (0s and 1s).
+
+Example:
+
+```
+5 = 0101
+3 = 0011
+```
+
+Bitwise operators compare these binary values bit by bit.
+
+---
+
+# Why Are Bitwise Operators Needed?
+
+Bitwise operations are much faster than many arithmetic operations because they operate directly at the CPU level.
+
+Java uses bitwise operators extensively in:
+
+- HashMap
+- ConcurrentHashMap
+- ThreadLocal
+- BitSet
+- EnumSet
+- JVM internals
+- Network programming
+- Compression algorithms
+- Cryptography
+
+---
+
+# Bitwise AND (&)
+
+## Definition
+
+The AND operator returns **1 only if both bits are 1**.
+
+Truth Table
+
+| A | B | A & B |
+|---|---|-------|
+|0|0|0|
+|0|1|0|
+|1|0|0|
+|1|1|1|
+
+---
+
+## Example
+
+```
+5 = 0101
+3 = 0011
+```
+
+```
+0101
+0011
+----
+0001
+```
+
+Result:
+
+```
+1
+```
+
+Java Example
+
+```java
+System.out.println(5 & 3);
+```
+
+Output
+
+```
+1
+```
+
+---
+
+# Why HashMap Uses AND
+
+A common question is:
+
+Why doesn't HashMap use `%` to calculate bucket indexes?
+
+Instead of:
+
+```java
+bucket = hash % capacity;
+```
+
+Java uses:
+
+```java
+bucket = hash & (capacity - 1);
+```
+
+Example:
+
+Capacity = 16
+
+```
+capacity - 1 = 15
+```
+
+Binary:
+
+```
+1111
+```
+
+Suppose the hash is:
+
+```
+10110110
+```
+
+Bucket calculation:
+
+```
+10110110
+00001111
+---------
+00000110
+```
+
+Bucket index = **6**
+
+Only the lower bits are used.
+
+---
+
+# Why AND Instead of % ?
+
+Using AND is faster because:
+
+- It is a simple CPU instruction.
+- No division operation is required.
+- HashMap always keeps the capacity as a power of 2 (16, 32, 64, 128...).
+- `(capacity - 1)` becomes an efficient bit mask.
+
+This is one of the reasons HashMap performs so well.
+
+---
+
+# Bitwise XOR (^)
+
+## Definition
+
+XOR returns **1 only when the bits are different**.
+
+Truth Table
+
+| A | B | A ^ B |
+|---|---|-------|
+|0|0|0|
+|0|1|1|
+|1|0|1|
+|1|1|0|
+
+---
+
+## Example
+
+```
+5 = 0101
+3 = 0011
+```
+
+```
+0101
+0011
+----
+0110
+```
+
+Result:
+
+```
+6
+```
+
+Java Example
+
+```java
+System.out.println(5 ^ 3);
+```
+
+Output
+
+```
+6
+```
+
+---
+
+# Why HashMap Uses XOR
+
+In Java 8+, HashMap computes the hash using:
+
+```java
+h ^ (h >>> 16)
+```
+
+This process is called **hash spreading**.
+
+The goal is to mix the higher 16 bits of the hash code into the lower 16 bits.
+
+Why?
+
+Because the bucket index uses only the lower bits.
+
+Without mixing, many different hash codes could end up in the same bucket if their lower bits are identical.
+
+Hash spreading reduces collisions by improving the distribution of hash values.
+
+---
+
+## Conceptual Example
+
+Original hash:
+
+```
+High Bits | Low Bits
+10101010  00001111
+```
+
+After shifting:
+
+```
+00000000 10101010
+```
+
+After XOR:
+
+```
+10101010 10100101
+```
+
+Now the lower bits also contain information from the higher bits, resulting in a better spread across buckets.
+
+---
+
+# Relationship Between AND and XOR in HashMap
+
+HashMap uses both operators together:
+
+Step 1: Improve the hash
+
+```java
+hash = h ^ (h >>> 16);
+```
+
+Step 2: Calculate the bucket
+
+```java
+bucket = hash & (capacity - 1);
+```
+
+In simple terms:
+
+- **XOR** creates a better-distributed hash.
+- **AND** finds the correct bucket efficiently.
+
+Both operations work together to reduce collisions and improve performance.
+
+---
+
+# Real-World Usage
+
+Bitwise operators are used in:
+
+- HashMap
+- HashSet
+- ConcurrentHashMap
+- ThreadLocal
+- BitSet
+- EnumSet
+- Network protocols
+- Image processing
+- Compression algorithms
+- Cryptography
+
+---
+
+# AI Engineering Connection
+
+Bitwise operations are useful in AI for:
+
+- Feature hashing
+- Efficient data encoding
+- Model quantization (INT8)
+- GPU memory optimization
+- Tensor operations
+- High-performance inference
+
+Although AI frameworks hide most low-level details, these optimizations rely heavily on bit manipulation.
+
+---
+
+# Common Mistakes
+
+1. Confusing AND (`&`) with logical AND (`&&`).
+2. Confusing XOR (`^`) with exponentiation (Java does **not** use `^` for powers).
+3. Assuming XOR always increases randomness—it only mixes bits.
+4. Forgetting that HashMap capacities are powers of 2.
+
+---
+
+# Interview Questions
+
+1. What is a bitwise operator?
+2. Explain the AND operator with an example.
+3. Explain the XOR operator with an example.
+4. Why does HashMap use `&` instead of `%`?
+5. Why does HashMap use `h ^ (h >>> 16)`?
+6. What is hash spreading?
+7. How do AND and XOR work together in HashMap?
+
+---
+
+# Memory Trick
+
+- **AND (`&`)** → "Both must be 1."
+- **XOR (`^`)** → "Different bits become 1."
+
+Remember:
+
+```
+HashMap
+
+Step 1 → XOR → Better hash
+
+Step 2 → AND → Bucket index
+```
+
+---
+
+# 60-Second Revision
+
+- Bitwise operators work directly on binary bits.
+- AND (`&`) returns 1 only if both bits are 1.
+- XOR (`^`) returns 1 only if the bits are different.
+- HashMap uses XOR for hash spreading.
+- HashMap uses AND to calculate bucket indexes.
+- `&` is faster than `%` because capacity is always a power of 2.
+- Together, XOR and AND reduce collisions and improve HashMap performance.
+
+---
+
+# Related Topics
+
+- Binary Basics
+- Hash Spreading
+- HashMap Internals
+- Two's Complement
+- Shift Operators (<<, >>, >>>)
