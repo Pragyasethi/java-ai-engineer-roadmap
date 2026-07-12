@@ -1,0 +1,250 @@
+# Binary Basics
+
+## Definition
+
+Binary is a number system that uses only two digits: **0** and **1**.
+
+Unlike the decimal system (Base-10), binary is a **Base-2** number system.
+
+Every piece of information inside a computer—numbers, text, images, videos—is ultimately stored in binary.
+
+---
+
+# Why Do Computers Use Binary?
+
+Computers are built using billions of tiny electronic switches called **transistors**.
+
+Each transistor has only two stable states:
+
+- OFF
+- ON
+
+These states are represented as:
+
+| Transistor | Binary |
+|------------|--------|
+| OFF | 0 |
+| ON | 1 |
+
+Since hardware naturally works with two states, binary is the most reliable way to represent data.
+
+---
+
+# Bit
+
+A **Bit (Binary Digit)** is the smallest unit of data.
+
+Possible values:
+
+```
+0
+1
+```
+
+Example:
+
+```
+1
+```
+
+or
+
+```
+0
+```
+
+---
+
+# Byte
+
+```
+8 Bits = 1 Byte
+```
+
+Example:
+
+```
+00101100
+```
+
+is one byte.
+
+---
+
+# Why Powers of 2?
+
+Every bit position represents a power of 2.
+
+| Bit Position | Value |
+|--------------|------:|
+|7|128|
+|6|64|
+|5|32|
+|4|16|
+|3|8|
+|2|4|
+|1|2|
+|0|1|
+
+Notice that every position doubles the previous value.
+
+---
+
+# Decimal to Binary
+
+Repeatedly divide by 2 and note the remainder.
+
+Example: Decimal 13
+
+13 ÷ 2 = 6 remainder 1
+
+6 ÷ 2 = 3 remainder 0
+
+3 ÷ 2 = 1 remainder 1
+
+1 ÷ 2 = 0 remainder 1
+
+Read remainders from bottom to top:
+
+```
+1101
+```
+
+Therefore:
+
+```
+13 = 1101₂
+```
+
+---
+
+# Binary to Decimal
+
+Example:
+
+```
+00101100
+```
+
+| Bit | Value |
+|-----|------:|
+|0|128|
+|0|64|
+|1|32|
+|0|16|
+|1|8|
+|1|4|
+|0|2|
+|0|1|
+
+Only add values where the bit is **1**.
+
+32 + 8 + 4 = 44
+
+Therefore:
+
+```
+00101100 = 44
+```
+
+---
+
+# Reading Binary Quickly
+
+Examples:
+
+```
+10000000 = 128
+```
+
+```
+01000000 = 64
+```
+
+```
+00100000 = 32
+```
+
+```
+00010000 = 16
+```
+
+```
+10100000 = 128 + 32 = 160
+```
+
+As you practice, you'll recognize these values instantly.
+
+---
+
+# Why Binary Matters in Java
+
+Binary is the foundation for:
+
+- Bitwise operators
+- HashMap bucket calculation
+- Integer storage
+- JVM internals
+- Network protocols
+- File formats
+- Cryptography
+
+---
+
+# AI Engineering Connection
+
+Binary is also important in AI.
+
+Examples:
+
+- INT8 model quantization
+- FP16 computation
+- GPU memory optimization
+- Tensor operations
+- Image encoding
+- Audio encoding
+
+Understanding binary helps explain why optimized AI models use less memory and run faster.
+
+---
+
+# Common Mistakes
+
+- Reading bit positions incorrectly.
+- Forgetting powers of 2.
+- Reading decimal-to-binary remainders from top to bottom.
+- Mixing decimal digits with binary digits.
+
+---
+
+# Interview Questions
+
+1. Why do computers use binary?
+2. What is a bit?
+3. What is a byte?
+4. Convert decimal to binary.
+5. Convert binary to decimal.
+6. Why are powers of 2 used?
+
+---
+
+# Memory Trick
+
+Remember this sequence:
+
+128 → 64 → 32 → 16 → 8 → 4 → 2 → 1
+
+---
+
+# 60-Second Revision
+
+- Binary uses only 0 and 1.
+- A bit is the smallest unit of data.
+- 8 bits make 1 byte.
+- Each bit position represents a power of 2.
+- Convert decimal to binary using repeated division by 2.
+- Convert binary to decimal by adding the values of set bits.
+- Binary is the foundation of Java internals and AI optimization.
+
+---
+
