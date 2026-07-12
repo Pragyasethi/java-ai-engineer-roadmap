@@ -241,6 +241,11 @@ This design provides:
 - Reduced collisions.
 - Faster lookup, insertion, and deletion.
 
+Capacity represents the total number of buckets, not the highest bucket index. 
+A capacity of 16 means there are 16 buckets with indexes 0 to 15. 
+We use (capacity - 1) because, for powers of 2, it produces a bitmask of all 1s (e.g., 16 → 15 → 1111), which allows efficient bucket calculation using bitwise AND. 
+If the capacity were 15, then (capacity - 1) would be 14 (1110), which is not an all-1s mask and would lead to poorer bucket distribution.
+
 ### Interview Summary
 
 Remember this flow:
