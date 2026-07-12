@@ -432,3 +432,7 @@ Better HashMap performance
 - Subtracting one from a power of two creates a binary mask with all lower bits set to **1**.
 - The mask preserves the lower bits of the hash, producing a good bucket index.
 - Power-of-two capacities also make resizing more efficient.
+
+
+Q.Why do you think capacities like 16, 32, 64, and 128 work better than capacities like 10 or 20?
+A.HashMap keeps its capacity as a power of 2 because (capacity - 1) becomes a bitmask of all 1s. This allows hash & (capacity - 1) to efficiently extract the lower bits of the hash, resulting in a more uniform bucket distribution. If the capacity isn’t a power of 2, the mask contains 0s between 1s, discarding some hash bits and increasing collisions.
