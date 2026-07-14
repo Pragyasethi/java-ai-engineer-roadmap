@@ -277,3 +277,9 @@ Bucket Index
 
 Store / Search Node
 ```
+
+## Q6. Why does HashMap compute h ^ (h >>> 16) instead of directly using hashCode()?
+
+HashMap determines the bucket using the lower bits of the hash. 
+If a hashCode() implementation has poor lower-bit distribution, many keys can land in the same bucket. 
+The expression h ^ (h >>> 16) mixes the upper 16 bits into the lower 16 bits using XOR, producing a more uniform distribution and reducing collisions without adding significant computational cost.
