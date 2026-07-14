@@ -283,3 +283,15 @@ Store / Search Node
 HashMap determines the bucket using the lower bits of the hash. 
 If a hashCode() implementation has poor lower-bit distribution, many keys can land in the same bucket. 
 The expression h ^ (h >>> 16) mixes the upper 16 bits into the lower 16 bits using XOR, producing a more uniform distribution and reducing collisions without adding significant computational cost.
+
+
+## Q7. Why 16? Why not 8, 12, or 24?
+Java’s int is 32 bits. HashMap computes the bucket index from the lower bits of the hash, so it shifts the upper 16 bits down with h >>> 16 and XORs them with the original hash. 
+Shifting by 16 cleanly aligns the upper and lower halves, giving the lower bits information from the upper bits. Shifts like 8, 12, or 24 only partially mix the bits and are less effective for this purpose.
+The JDK designers didn’t mathematically prove that 16 is the only correct value. Other shifts can also mix bits. They chose 16 because it provides a good balance of:
+
+* Complete half-to-half mixing for a 32-bit int
+* Very low computational cost
+* Excellent distribution in practice
+
+This is a design choice based on performance and effectiveness, not a language rule.
