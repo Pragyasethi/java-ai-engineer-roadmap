@@ -1,0 +1,463 @@
+# HashMap Internals – put() & get() Workflow
+
+## Overview
+
+`HashMap` provides **O(1)** average time complexity for insertion and retrieval by combining:
+
+- Hashing
+- Bucket indexing
+- Collision handling
+- Efficient resizing
+
+Internally, most of the logic resides inside the `putVal()` and `getNode()` methods.
+
+---
+
+# put() Internal Workflow
+
+When we execute:
+
+```java
+map.put("John", 100);
+```
+
+The following steps occur internally.
+
+---
+
+## Step 1: put() delegates to putVal()
+
+```java
+public V put(K key, V value) {
+    return putVal(hash(key), key, value, false, true);
+}
+```
+
+The `put()` method is just a wrapper. All insertion logic is handled inside `putVal()`.
+
+---
+
+## Step 2: Lazy Table Initialization
+
+Initially:
+
+```text
+table = null
+size = 0
+threshold = 0
+```
+
+On the first insertion:
+
+```java
+if (table == null || table.length == 0)
+    resize();
+```
+
+Although the method is named `resize()`, it also performs the initial allocation.
+
+Default values become:
+
+```text
+Capacity = 16
+Threshold = 12
+(16 × 0.75)
+```
+
+### Why lazy initialization?
+
+- Saves memory when a HashMap is created but never used.
+- Bucket array is allocated only when the first element is inserted.
+
+---
+
+## Step 3: Calculate Hash
+
+Java first calls:
+
+```java
+hashCode()
+```
+
+Then performs hash spreading:
+
+```java
+h ^ (h >>> 16)
+```
+
+### Purpose
+
+Mix high-order bits into low-order bits so bucket distribution is more uniform.
+
+---
+
+## Step 4: Calculate Bucket Index
+
+Bucket index is calculated using:
+
+```java
+(capacity - 1) & hash
+```
+
+Example:
+
+```text
+Capacity = 16
+Mask = 15 (1111)
+
+index = hash & 1111
+```
+
+Using bitwise AND is much faster than using the modulo (`%`) operator.
+
+---
+
+## Step 5: Check Bucket
+
+### Case 1: Bucket is empty
+
+```text
+table[index] == null
+```
+
+A new node is created.
+
+```text
+Node
+------
+hash
+key
+value
+next
+------
+```
+
+Insertion completes in O(1).
+
+---
+
+### Case 2: Bucket already contains nodes
+
+A collision has occurred.
+
+Java traverses the bucket.
+
+For each node it checks:
+
+1. Hash matches?
+2. Key reference matches?
+3. equals() returns true?
+
+---
+
+## Step 6: Existing Key
+
+If:
+
+```java
+equals() == true
+```
+
+Java updates the value.
+
+Example:
+
+```java
+map.put("John",100);
+map.put("John",500);
+```
+
+Result:
+
+```text
+John → 500
+```
+
+No new node is created.
+
+`size` remains unchanged.
+
+---
+
+## Step 7: New Key
+
+If no existing key matches:
+
+A new node is appended to the bucket (or inserted into a Red-Black Tree if the bucket has already been treeified).
+
+Then:
+
+```java
+size++;
+```
+
+---
+
+## Step 8: Resize Check
+
+After successful insertion:
+
+```java
+if (++size > threshold)
+    resize();
+```
+
+Example:
+
+```text
+Capacity = 16
+Threshold = 12
+
+13th insertion
+
+↓
+
+Resize to 32
+```
+
+---
+
+# Complete put() Flow
+
+```text
+put()
+
+↓
+
+hash()
+
+↓
+
+Hash spreading
+
+↓
+
+(capacity-1)&hash
+
+↓
+
+Bucket found
+
+↓
+
+Bucket empty?
+
+↓
+
+Yes → Insert
+
+↓
+
+No
+
+↓
+
+Collision
+
+↓
+
+Traverse bucket
+
+↓
+
+equals()
+
+↓
+
+Existing key?
+
+↓
+
+Yes → Update value
+
+↓
+
+No → Create new node
+
+↓
+
+size++
+
+↓
+
+Threshold exceeded?
+
+↓
+
+Yes
+
+↓
+
+Resize
+```
+
+---
+
+# get() Internal Workflow
+
+When we execute:
+
+```java
+map.get("John");
+```
+
+HashMap performs the following steps.
+
+---
+
+## Step 1: Calculate Hash
+
+```java
+hashCode()
+
+↓
+
+Hash spreading
+```
+
+---
+
+## Step 2: Calculate Bucket
+
+```java
+(capacity - 1) & hash
+```
+
+HashMap directly jumps to the expected bucket.
+
+---
+
+## Step 3: Traverse Bucket
+
+If multiple nodes exist due to collisions:
+
+Java traverses them one by one.
+
+For every node:
+
+```text
+Hash matches?
+
+↓
+
+equals()?
+
+↓
+
+Return value
+```
+
+---
+
+## Why compare hash before equals()?
+
+`hash` comparison is a simple integer comparison.
+
+`equals()` may compare multiple fields and is comparatively expensive.
+
+Checking the hash first avoids unnecessary `equals()` calls.
+
+---
+
+# Complete get() Flow
+
+```text
+get()
+
+↓
+
+hash()
+
+↓
+
+Hash spreading
+
+↓
+
+(capacity-1)&hash
+
+↓
+
+Locate bucket
+
+↓
+
+Traverse bucket
+
+↓
+
+hash matches?
+
+↓
+
+equals()?
+
+↓
+
+Return value
+```
+
+---
+
+# Important Points
+
+- `put()` delegates to `putVal()`.
+- `get()` internally delegates to `getNode()`.
+- HashMap allocates its bucket array lazily.
+- Bucket index is calculated using `(capacity - 1) & hash`.
+- Existing keys update values.
+- New keys increase size.
+- Resize occurs only after exceeding the threshold.
+- `get()` never modifies the HashMap.
+- Hash comparison is performed before `equals()` for better performance.
+
+---
+
+# Interview Questions
+
+### Why doesn't HashMap allocate memory in its constructor?
+
+To save memory through lazy initialization.
+
+---
+
+### Why is put() only a wrapper?
+
+To keep all insertion logic inside `putVal()`.
+
+---
+
+### Why does get() compare hash before equals()?
+
+Integer comparison is much cheaper than object comparison.
+
+---
+
+### Does inserting an existing key increase the size?
+
+No.
+
+Only new keys increase the size.
+
+---
+
+### When does resize occur?
+
+After a successful insertion if:
+
+```text
+size > threshold
+```
+
+---
+
+# AI Engineering Connection
+
+Hash-based lookups are widely used in AI systems:
+
+- LLM response caching
+- Embedding caches
+- Feature stores
+- Prompt lookup tables
+
+Understanding HashMap internals helps explain why these systems can retrieve previously computed results in near O(1) time.
